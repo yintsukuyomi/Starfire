@@ -32,10 +32,10 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <ThemeProvider defaultTheme="system" enableSystem>
-      <div className="min-h-screen min-h-dvh bg-background text-foreground overflow-hidden">
+      <div className="min-h-screen min-h-dvh bg-background text-foreground">
         {/* Mobile-first full screen layout */}
         <main className="h-screen h-dvh flex flex-col">
-          <div className="flex-1 overflow-hidden safe-area-inset">
+          <div className="flex-1 overflow-auto safe-area-inset">
             {children || <Outlet />}
           </div>
         </main>

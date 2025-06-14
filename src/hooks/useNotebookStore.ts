@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { Note, Folder, Tag, NoteVersion } from '@/types/notebooks';
+import { toast } from 'sonner';
+
+const API_URL = 'http://localhost:3001/api';
 
 // Helper function to generate a version summary
 const generateChangeSummary = (oldNote: Partial<Note>, newNote: Partial<Note>): string => {
@@ -11,7 +14,7 @@ const generateChangeSummary = (oldNote: Partial<Note>, newNote: Partial<Note>): 
   }
   
   if (oldNote.content !== newNote.content) {
-    changes.push('content modified');
+    changes.push('content updated');
   }
   
   if (JSON.stringify(oldNote.tags) !== JSON.stringify(newNote.tags)) {
@@ -22,12 +25,12 @@ const generateChangeSummary = (oldNote: Partial<Note>, newNote: Partial<Note>): 
     changes.push('folder changed');
   }
   
-  if (oldNote.isPinned !== newNote.isPinned) {
-    changes.push(newNote.isPinned ? 'pinned' : 'unpinned');
-  }
-  
   if (oldNote.isArchived !== newNote.isArchived) {
     changes.push(newNote.isArchived ? 'archived' : 'unarchived');
+  }
+  
+  if (oldNote.isPinned !== newNote.isPinned) {
+    changes.push(newNote.isPinned ? 'pinned' : 'unpinned');
   }
   
   return changes.length > 0 ? changes.join(', ') : 'no changes detected';
@@ -42,7 +45,8 @@ interface NotebookState {
   selectedFolderId: string | null;
   searchQuery: string;
   selectedTagIds: string[];
-  versions: Record<string, NoteVersion[]>; // noteId -> versions[]
+  versions: Record<string, NoteVersion[]>;
+  isLoading: boolean;
   
   // Actions
   setNotes: (notes: Note[]) => void;
@@ -54,19 +58,19 @@ interface NotebookState {
   setSelectedTagIds: (ids: string[]) => void;
   
   // CRUD Operations
-  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'version'>) => string;
-  updateNote: (id: string, updates: Partial<Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'version'>>) => void;
-  deleteNote: (id: string) => void;
-  addFolder: (folder: Omit<Folder, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateFolder: (id: string, updates: Partial<Omit<Folder, 'id' | 'createdAt' | 'updatedAt'>>) => void;
-  deleteFolder: (id: string) => void;
-  addTag: (tag: Omit<Tag, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateTag: (id: string, updates: Partial<Omit<Tag, 'id' | 'createdAt' | 'updatedAt'>>) => void;
-  deleteTag: (id: string) => void;
+  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'version'>) => Promise<string>;
+  updateNote: (id: string, updates: Partial<Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'version'>>) => Promise<void>;
+  deleteNote: (id: string) => Promise<void>;
+  addFolder: (folder: Omit<Folder, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateFolder: (id: string, updates: Partial<Omit<Folder, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
+  deleteFolder: (id: string) => Promise<void>;
+  addTag: (tag: Omit<Tag, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateTag: (id: string, updates: Partial<Omit<Tag, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
+  deleteTag: (id: string) => Promise<void>;
   
   // Versioning
   getNoteVersions: (noteId: string) => NoteVersion[];
-  restoreVersion: (version: NoteVersion) => void;
+  restoreVersion: (version: NoteVersion) => Promise<void>;
   
   // Helpers
   getNoteById: (id: string) => Note | undefined;
@@ -75,6 +79,9 @@ interface NotebookState {
   getNotesByFolder: (folderId: string | null) => Note[];
   getNotesByTag: (tagId: string) => Note[];
   searchNotes: (query: string) => Note[];
+  
+  // Initialization
+  initialize: () => Promise<void>;
 }
 
 export const useNotebookStore = create<NotebookState>((set, get) => ({
@@ -87,151 +94,135 @@ export const useNotebookStore = create<NotebookState>((set, get) => ({
   searchQuery: '',
   selectedTagIds: [],
   versions: {},
+  isLoading: false,
   
-  // Setters
+  // State setters
   setNotes: (notes) => set({ notes }),
   setFolders: (folders) => set({ folders }),
   setTags: (tags) => set({ tags }),
-  setSelectedNoteId: (selectedNoteId) => set({ selectedNoteId }),
-  setSelectedFolderId: (selectedFolderId) => set({ selectedFolderId }),
-  setSearchQuery: (searchQuery) => set({ searchQuery }),
-  setSelectedTagIds: (selectedTagIds) => set({ selectedTagIds }),
+  setSelectedNoteId: (id) => set({ selectedNoteId: id }),
+  setSelectedFolderId: (id) => set({ selectedFolderId: id }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  setSelectedTagIds: (ids) => set({ selectedTagIds: ids }),
   
   // CRUD Operations
-  addNote: (note) => {
-    const newNote: Note = {
-      ...note,
-      id: uuidv4(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      version: 1,
-    };
-    
-    // Create initial version
-    const initialVersion: NoteVersion = {
-      id: uuidv4(),
-      noteId: newNote.id,
-      title: newNote.title,
-      content: newNote.content,
-      tags: [...newNote.tags],
-      folderId: newNote.folderId,
-      isArchived: newNote.isArchived,
-      isPinned: newNote.isPinned,
-      version: 1,
-      updatedAt: newNote.updatedAt,
-      updatedBy: 'system',
-      changeSummary: 'Initial version',
-    };
-    
-    set((state) => ({
-      notes: [...state.notes, newNote],
-      versions: {
-        ...state.versions,
-        [newNote.id]: [initialVersion],
-      },
-    }));
-    
-    return newNote.id;
+  addNote: async (note) => {
+    try {
+      const response = await fetch(`${API_URL}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(note),
+      });
+      
+      if (!response.ok) throw new Error('Failed to create note');
+      
+      const newNote = await response.json();
+      set((state) => ({ notes: [...state.notes, newNote] }));
+      return newNote.id;
+    } catch (error) {
+      toast.error('Failed to create note');
+      throw error;
+    }
   },
   
-  updateNote: (id, updates) => {
-    set((state) => {
-      const noteToUpdate = state.notes.find((n) => n.id === id);
-      if (!noteToUpdate) return state;
+  updateNote: async (id, updates) => {
+    try {
+      const response = await fetch(`${API_URL}/notes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
       
-      const updatedNote = {
-        ...noteToUpdate,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-        version: noteToUpdate.version + 1,
-      };
+      if (!response.ok) throw new Error('Failed to update note');
       
-      // Create new version if there are actual changes
-      const changeSummary = generateChangeSummary(noteToUpdate, updatedNote);
-      if (changeSummary !== 'no changes detected') {
-        const newVersion: NoteVersion = {
-          id: uuidv4(),
-          noteId: id,
-          title: updatedNote.title,
-          content: updatedNote.content,
-          tags: [...updatedNote.tags],
-          folderId: updatedNote.folderId,
-          isArchived: updatedNote.isArchived,
-          isPinned: updatedNote.isPinned,
-          version: updatedNote.version,
-          updatedAt: updatedNote.updatedAt,
-          updatedBy: 'user',
-          changeSummary,
-        };
-        
-        return {
-          notes: state.notes.map((note) =>
-            note.id === id ? updatedNote : note
-          ),
-          versions: {
-            ...state.versions,
-            [id]: [
-              ...(state.versions[id] || []),
-              newVersion,
-            ].sort((a, b) => b.version - a.version).slice(0, 50), // Keep last 50 versions
-          },
-        };
-      }
-      
-      return {
+      const updatedNote = await response.json();
+      set((state) => ({
         notes: state.notes.map((note) =>
-          note.id === id ? updatedNote : note
+          note.id === id ? { ...note, ...updatedNote } : note
         ),
-      };
-    });
+      }));
+    } catch (error) {
+      toast.error('Failed to update note');
+      throw error;
+    }
   },
   
-  deleteNote: (id) => {
-    set((state) => {
-      const newVersions = { ...state.versions };
-      delete newVersions[id];
+  deleteNote: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/trash/move-to-trash`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'note', id }),
+      });
       
-      return {
+      if (!response.ok) throw new Error('Failed to delete note');
+      
+      set((state) => ({
         notes: state.notes.filter((note) => note.id !== id),
-        versions: newVersions,
-      };
-    });
+      }));
+    } catch (error) {
+      toast.error('Failed to delete note');
+      throw error;
+    }
   },
   
-  addFolder: (folder) => {
-    const newFolder: Folder = {
-      ...folder,
-      id: uuidv4(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    set((state) => ({
-      folders: [...state.folders, newFolder],
-    }));
+  addFolder: async (folder) => {
+    try {
+      const response = await fetch(`${API_URL}/folders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(folder),
+      });
+      
+      if (!response.ok) throw new Error('Failed to create folder');
+      
+      const newFolder = await response.json();
+      set((state) => ({ folders: [...state.folders, newFolder] }));
+    } catch (error) {
+      toast.error('Failed to create folder');
+      throw error;
+    }
   },
   
-  updateFolder: (id, updates) => {
-    set((state) => ({
-      folders: state.folders.map((folder) =>
-        folder.id === id
-          ? {
-              ...folder,
-              ...updates,
-              updatedAt: new Date().toISOString(),
-            }
-          : folder
-      ),
-    }));
+  updateFolder: async (id, updates) => {
+    try {
+      const response = await fetch(`${API_URL}/folders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update folder');
+      
+      const updatedFolder = await response.json();
+      set((state) => ({
+        folders: state.folders.map((folder) =>
+          folder.id === id ? { ...folder, ...updatedFolder } : folder
+        ),
+      }));
+    } catch (error) {
+      toast.error('Failed to update folder');
+      throw error;
+    }
   },
   
-  deleteFolder: (id) => {
-    // Move notes to root folder before deleting
-    set((state) => ({
-      notes: state.notes.map((note) =>
-        note.folderId === id ? { ...note, folderId: null } : note
-      ),
-      folders: state.folders.filter((folder) => folder.id !== id),
-    }));
+  deleteFolder: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/trash/move-to-trash`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'folder', id }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete folder');
+      
+      set((state) => ({
+        folders: state.folders.filter((folder) => folder.id !== id),
+      }));
+    } catch (error) {
+      toast.error('Failed to delete folder');
+      throw error;
+    }
   },
   
   addTag: (tag) => {
@@ -276,48 +267,26 @@ export const useNotebookStore = create<NotebookState>((set, get) => ({
     return get().versions[noteId] || [];
   },
   
-  restoreVersion: (version) => {
-    const { noteId } = version;
-    const state = get();
-    
-    const noteToUpdate = state.notes.find((n) => n.id === noteId);
-    if (!noteToUpdate) return;
-    
-    // Create a new version when restoring
-    const restoredVersion: NoteVersion = {
-      ...version,
-      id: uuidv4(),
-      version: noteToUpdate.version + 1,
-      updatedAt: new Date().toISOString(),
-      updatedBy: 'user',
-      changeSummary: `Restored from version ${version.version}`,
-    };
-    
-    // Update the note with the restored version
-    const updatedNote: Note = {
-      ...noteToUpdate,
-      title: version.title,
-      content: version.content,
-      tags: [...version.tags],
-      folderId: version.folderId ?? null,
-      isArchived: version.isArchived,
-      isPinned: version.isPinned,
-      version: restoredVersion.version,
-      updatedAt: restoredVersion.updatedAt,
-    };
-    
-    set((state) => ({
-      notes: state.notes.map((note) =>
-        note.id === noteId ? updatedNote : note
-      ),
-      versions: {
-        ...state.versions,
-        [noteId]: [
-          ...(state.versions[noteId] || []),
-          restoredVersion,
-        ].sort((a, b) => b.version - a.version).slice(0, 50),
-      },
-    }));
+  restoreVersion: async (version) => {
+    try {
+      const response = await fetch(`${API_URL}/notes/${version.noteId}/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ versionId: version.id }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to restore version');
+      
+      const restoredNote = await response.json();
+      set((state) => ({
+        notes: state.notes.map((note) =>
+          note.id === version.noteId ? restoredNote : note
+        ),
+      }));
+    } catch (error) {
+      toast.error('Failed to restore version');
+      throw error;
+    }
   },
   
   // Helper methods
@@ -348,5 +317,32 @@ export const useNotebookStore = create<NotebookState>((set, get) => ({
         note.title.toLowerCase().includes(q) ||
         note.content.toLowerCase().includes(q)
     );
+  },
+  
+  // Initialization
+  initialize: async () => {
+    set({ isLoading: true });
+    try {
+      const [notesRes, foldersRes, tagsRes] = await Promise.all([
+        fetch(`${API_URL}/notes`),
+        fetch(`${API_URL}/folders`),
+        fetch(`${API_URL}/tags`),
+      ]);
+
+      if (!notesRes.ok || !foldersRes.ok || !tagsRes.ok) {
+        throw new Error('Failed to fetch initial data');
+      }
+
+      const [notes, folders, tags] = await Promise.all([
+        notesRes.json(),
+        foldersRes.json(),
+        tagsRes.json(),
+      ]);
+
+      set({ notes, folders, tags, isLoading: false });
+    } catch (error) {
+      toast.error('Failed to initialize data');
+      set({ isLoading: false });
+    }
   },
 }));

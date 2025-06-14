@@ -1,0 +1,67 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Note {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  folderId    String?
+  isArchived  Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  version     Int      @default(1)
+  tags        Tag[]    @relation("NoteToTag")
+  folder      Folder?  @relation(fields: [folderId], references: [id])
+  versions    NoteVersion[]
+  deletedAt   DateTime?
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  notes     Note[]
+  parent    Folder?  @relation("FolderToFolder", fields: [parentId], references: [id])
+  children  Folder[] @relation("FolderToFolder")
+  deletedAt DateTime?
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  color     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  notes     Note[]   @relation("NoteToTag")
+  deletedAt DateTime?
+}
+
+model NoteVersion {
+  id            String   @id @default(uuid())
+  noteId        String
+  title         String
+  content       String
+  version       Int
+  updatedAt     DateTime @default(now())
+  updatedBy     String
+  changeSummary String
+  note          Note     @relation(fields: [noteId], references: [id])
+}
+
+model TrashItem {
+  id          String   @id @default(uuid())
+  type        String   // "note", "folder", "tag"
+  originalId  String
+  data        String   // JSON string of the original item
+  deletedAt   DateTime @default(now())
+  expiresAt   DateTime
+}

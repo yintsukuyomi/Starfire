@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 // import { useAuthStore } from '../stores/useAuthStore';
 // Update the import path below if the file is located elsewhere or has a different name:
-import { useAuthStore } from '../stores/useAuthStore'; // <-- Ensure this file exists at the correct path
+// import { useAuthStore } from '../stores/useAuthStore'; // <-- Ensure this file exists at the correct path
+// Update the import path below to the correct location of your useAuthStore file:
+import { useAuthStore } from '../stores/authStore'; // <-- Example: adjust 'authStore' to match your actual file name
 // import { useMusicStore } from '@/stores/useMusicStore';
 import { useMusicStore } from '../stores/useMusicStore';
 import { Card } from '../components/ui/Card';
