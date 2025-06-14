@@ -1,43 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Note, Tag, NoteVersion } from '@/types/notebooks';
-import { TiptapEditor } from '@/components/editor/TiptapEditor';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { History, X, Plus, Tag as TagIcon } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Note, Tag, NoteVersion } from '../../types/notebooks';
+import { TiptapEditor } from '../editor/TiptapEditor';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Badge } from '../ui/badge';
+import { History, X, Plus, Tag as TagIcon, ArrowLeft } from 'lucide-react';
 import { VersionHistory } from './VersionHistory';
-import { useNotebookStore } from '@/hooks/useNotebookStore';
-
-// Move generateChangeSummary here since it's not in a separate file
-const generateChangeSummary = (oldNote: Partial<Note>, newNote: Partial<Note>): string => {
-  const changes: string[] = [];
-  
-  if (oldNote.title !== newNote.title) {
-    changes.push('title updated');
-  }
-  
-  if (oldNote.content !== newNote.content) {
-    changes.push('content modified');
-  }
-  
-  if (JSON.stringify(oldNote.tags) !== JSON.stringify(newNote.tags)) {
-    changes.push('tags updated');
-  }
-  
-  if (oldNote.folderId !== newNote.folderId) {
-    changes.push('folder changed');
-  }
-  
-  if (oldNote.isPinned !== newNote.isPinned) {
-    changes.push(newNote.isPinned ? 'pinned' : 'unpinned');
-  }
-  
-  if (oldNote.isArchived !== newNote.isArchived) {
-    changes.push(newNote.isArchived ? 'archived' : 'unarchived');
-  }
-  
-  return changes.length > 0 ? changes.join(', ') : 'no changes detected';
-};
+import { useNotebookStore } from '../../hooks/useNotebookStore';
 
 interface NoteEditorProps {
   note: Note | null;
@@ -59,7 +28,6 @@ export function NoteEditor({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [isTagInputVisible, setIsTagInputVisible] = useState(false);
   const [tagInput, setTagInput] = useState('');
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   
   // Get version history from the store
@@ -78,12 +46,11 @@ export function NoteEditor({
   const handleRestoreVersion = (version: NoteVersion) => {
     if (!note) return;
     
-    // Update the note with the restored version
     const updates = {
       title: version.title,
       content: version.content,
       tags: [...version.tags],
-      folderId: version.folderId ?? null, // Ensure folderId is either string or null
+      folderId: version.folderId ?? null,
       isArchived: version.isArchived,
       isPinned: version.isPinned,
     };
@@ -105,13 +72,6 @@ export function NoteEditor({
     }
   }, [note]);
 
-  // Update available tags when allTags or selectedTagIds change
-  useEffect(() => {
-    setAvailableTags(
-      allTags.filter((tag) => !selectedTagIds.includes(tag.id))
-    );
-  }, [allTags, selectedTagIds]);
-
   const handleSave = () => {
     if (!note) return;
     
@@ -123,30 +83,6 @@ export function NoteEditor({
       isArchived: note.isArchived,
       isPinned: note.isPinned,
     });
-  };
-
-  const handleAddTag = () => {
-    if (tagInput.trim()) {
-      const tagName = tagInput.trim();
-      const existingTag = availableTags.find(tag => tag.name.toLowerCase() === tagName.toLowerCase());
-      
-      if (existingTag) {
-        if (!selectedTagIds.includes(existingTag.id)) {
-          setSelectedTagIds([...selectedTagIds, existingTag.id]);
-        }
-      } else {
-        const newTag = { id: `tag-${Date.now()}`, name: tagName, color: 'gray' };
-        setAvailableTags([...availableTags, newTag]);
-        setSelectedTagIds([...selectedTagIds, newTag.id]);
-      }
-      
-      setTagInput('');
-      setIsTagInputVisible(false);
-    }
-  };
-
-  const handleRemoveTag = (tagId: string) => {
-    setSelectedTagIds(selectedTagIds.filter((id) => id !== tagId));
   };
 
   const handleCreateNewTag = useCallback(() => {
@@ -170,15 +106,16 @@ export function NoteEditor({
         createdAt: now,
         updatedAt: now,
       };
-      // In a real app, you would save the new tag to your database
-      // and then add it to the selected tags
-      setAvailableTags(prev => [...prev, newTag]);
       setSelectedTagIds(prev => [...prev, newTag.id]);
     }
     
     setTagInput('');
     setIsTagInputVisible(false);
-  }, [tagInput, allTags, selectedTagIds, setSelectedTagIds, setAvailableTags]);
+  }, [tagInput, allTags, selectedTagIds]);
+
+  const handleRemoveTag = (tagId: string) => {
+    setSelectedTagIds(selectedTagIds.filter((id) => id !== tagId));
+  };
 
   if (!note) {
     return (
@@ -202,47 +139,53 @@ export function NoteEditor({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <div className="border-b p-4">
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" onClick={onBack} className="md:hidden">
-            ← Back
-          </Button>
-          <h1 className="text-xl font-semibold">Notebooks</h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowVersionHistory(true)}
-            className="ml-2 text-muted-foreground hover:text-foreground"
-            title="View version history"
-          >
-            <History className="h-4 w-4 mr-1" />
-            <span className="text-xs">v{note.version}</span>
-          </Button>
-        </div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={handleSave}>
-              Save
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => note && onDelete(note.id)}
-              className="text-destructive hover:text-destructive"
-            >
-              Delete
-            </Button>
+      {/* Mobile-optimized header */}
+      <div className="border-b bg-background/95 backdrop-blur sticky top-0 z-10">
+        {/* Title and actions */}
+        <div className="p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowVersionHistory(true)}
+                className="h-8 w-8"
+                title="Version history"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground">v{note.version}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSave}
+                className="h-8"
+              >
+                Save
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(note.id)}
+                className="h-8 w-8 text-destructive"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-        
-        <div className="space-y-2">
+          
+          {/* Title input - mobile optimized */}
           <Input
             placeholder="Note title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="text-xl font-semibold border-0 shadow-none focus-visible:ring-0 px-0"
+            className="text-lg font-semibold border-0 shadow-none focus-visible:ring-0 px-0 bg-transparent text-base"
+            style={{ fontSize: '16px' }} // Prevent iOS zoom
           />
           
+          {/* Tags - mobile optimized */}
           <div className="flex flex-wrap items-center gap-2">
             {selectedTagIds.map((tagId) => {
               const tag = allTags.find((t) => t.id === tagId);
@@ -250,7 +193,7 @@ export function NoteEditor({
               return (
                 <Badge
                   key={tagId}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs"
                   style={{ backgroundColor: tag.color }}
                 >
                   {tag.name}
@@ -273,12 +216,13 @@ export function NoteEditor({
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleCreateNewTag()}
                   placeholder="Tag name"
-                  className="h-8 w-32"
+                  className="h-7 w-24 text-xs"
+                  style={{ fontSize: '16px' }}
                   autoFocus
                 />
                 <Button 
                   type="button" 
-                  size="sm"
+                  size="xs"
                   onClick={handleCreateNewTag}
                 >
                   Add
@@ -286,55 +230,44 @@ export function NoteEditor({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
+                  size="xs"
                   onClick={() => {
                     setTagInput('');
                     setIsTagInputVisible(false);
                   }}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3" />
                 </Button>
               </div>
             ) : (
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                className="h-8 gap-1"
+                size="xs"
+                className="h-7"
                 onClick={() => setIsTagInputVisible(true)}
               >
-                <TagIcon className="h-3.5 w-3.5" />
-                Add Tag
+                <TagIcon className="h-3 w-3 mr-1" />
+                Tag
               </Button>
             )}
-          </div>
-          
-          <div className="mt-4 flex-1 overflow-auto">
-            <TiptapEditor
-              content={content}
-              onChange={setContent}
-              placeholder="Start writing your note here..."
-              className="h-full"
-            />
-          </div>
-          
-          <div className="border-t p-2 text-xs text-muted-foreground text-right">
-            Last updated: {new Date(note.updatedAt).toLocaleString()}
           </div>
         </div>
       </div>
       
-      <div className="flex-1 overflow-auto">
+      {/* Editor - Mobile optimized */}
+      <div className="flex-1 overflow-hidden">
         <TiptapEditor
           content={content}
           onChange={setContent}
           placeholder="Start writing your note here..."
-          className="h-full"
+          className="h-full border-0"
         />
       </div>
       
-      <div className="border-t p-2 text-xs text-muted-foreground text-right">
-        Last updated: {new Date(note.updatedAt).toLocaleString()}
+      {/* Footer - Mobile optimized */}
+      <div className="border-t p-2 text-xs text-muted-foreground text-center bg-background/95 backdrop-blur safe-bottom">
+        Last updated: {new Date(note.updatedAt).toLocaleDateString()}
       </div>
     </div>
   );

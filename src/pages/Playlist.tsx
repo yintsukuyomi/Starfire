@@ -1,10 +1,14 @@
-import { PlaceholderPage } from './PlaceholderPage';
+import { PageLayout } from './PageLayout';
 
 export function Playlist() {
   return (
-    <PlaceholderPage 
-      title="Playlist"
-      description="Create and manage your music playlists with notes"
-    />
+    <PageLayout 
+      title="Playlist" 
+      description="Your music playlists and favorites"
+    >
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Playlist feature coming soon...</p>
+      </div>
+    </PageLayout>
   );
 }

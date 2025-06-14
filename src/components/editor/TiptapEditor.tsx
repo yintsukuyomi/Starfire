@@ -1,5 +1,6 @@
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -9,7 +10,9 @@ import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
 import { Color } from '@tiptap/extension-color';
 import TextStyle from '@tiptap/extension-text-style';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
+import { useState } from 'react';
+import { Button } from '../ui';
 
 interface TiptapEditorProps {
   content: string;
@@ -31,13 +34,18 @@ export function TiptapEditor({
           levels: [1, 2, 3, 4, 5, 6],
         },
       }),
+      Placeholder.configure({
+        placeholder,
+      }),
       Underline,
       Link.configure({
         openOnClick: false,
       }),
       Image,
       TaskList,
-      TaskItem,
+      TaskItem.configure({
+        nested: true,
+      }),
       Highlight,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
@@ -51,7 +59,8 @@ export function TiptapEditor({
     },
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert max-w-none focus:outline-none p-4',
+        class: 'prose dark:prose-invert max-w-none focus:outline-none p-4 min-h-[300px] text-base leading-relaxed',
+        style: 'font-size: 16px;', // Prevent iOS zoom
       },
     },
   });
@@ -61,14 +70,19 @@ export function TiptapEditor({
   }
 
   return (
-    <div className={cn('rounded-lg border bg-background', className)}>
-      <EditorToolbar editor={editor} />
-      <EditorContent editor={editor} placeholder={placeholder} className="min-h-[300px]" />
+    <div className={cn('flex flex-col h-full', className)}>
+      <MobileToolbar editor={editor} />
+      <div className="flex-1 overflow-auto">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }
 
-const EditorToolbar = ({ editor }: { editor: any }) => {
+// Mobile-optimized toolbar
+const MobileToolbar = ({ editor }: { editor: any }) => {
+  const [showMore, setShowMore] = useState(false);
+
   if (!editor) {
     return null;
   }
@@ -96,159 +110,120 @@ const EditorToolbar = ({ editor }: { editor: any }) => {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   };
 
+  const primaryTools = [
+    {
+      icon: 'B',
+      action: () => editor.chain().focus().toggleBold().run(),
+      active: editor.isActive('bold'),
+      className: 'font-bold',
+    },
+    {
+      icon: 'I',
+      action: () => editor.chain().focus().toggleItalic().run(),
+      active: editor.isActive('italic'),
+      className: 'italic',
+    },
+    {
+      icon: 'H1',
+      action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+      active: editor.isActive('heading', { level: 1 }),
+      className: 'font-bold text-xs',
+    },
+    {
+      icon: '•',
+      action: () => editor.chain().focus().toggleBulletList().run(),
+      active: editor.isActive('bulletList'),
+    },
+    {
+      icon: '☑',
+      action: () => editor.chain().focus().toggleTaskList().run(),
+      active: editor.isActive('taskList'),
+    },
+  ];
+
+  const secondaryTools = [
+    {
+      icon: 'U',
+      action: () => editor.chain().focus().toggleUnderline().run(),
+      active: editor.isActive('underline'),
+      className: 'underline',
+    },
+    {
+      icon: 'H2',
+      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      active: editor.isActive('heading', { level: 2 }),
+      className: 'font-bold text-xs',
+    },
+    {
+      icon: '1.',
+      action: () => editor.chain().focus().toggleOrderedList().run(),
+      active: editor.isActive('orderedList'),
+    },
+    {
+      icon: '🔗',
+      action: setLink,
+      active: editor.isActive('link'),
+    },
+    {
+      icon: '🖼️',
+      action: addImage,
+      active: false,
+    },
+    {
+      icon: '🖍️',
+      action: () => editor.chain().focus().toggleHighlight().run(),
+      active: editor.isActive('highlight'),
+    },
+  ];
+
   return (
-    <div className="border-b p-2 flex flex-wrap gap-1">
-      <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('bold') ? 'bg-accent' : ''
-        )}
-        title="Bold"
-      >
-        <span className="font-bold">B</span>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('italic') ? 'bg-accent' : ''
-        )}
-        title="Italic"
-      >
-        <span className="italic">I</span>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('underline') ? 'bg-accent' : ''
-        )}
-        title="Underline"
-      >
-        <span className="underline">U</span>
-      </button>
-      <div className="border-l border-border mx-1"></div>
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('heading', { level: 1 }) ? 'bg-accent' : ''
-        )}
-        title="Heading 1"
-      >
-        H1
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('heading', { level: 2 }) ? 'bg-accent' : ''
-        )}
-        title="Heading 2"
-      >
-        H2
-      </button>
-      <div className="border-l border-border mx-1"></div>
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('bulletList') ? 'bg-accent' : ''
-        )}
-        title="Bullet List"
-      >
-        •
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('orderedList') ? 'bg-accent' : ''
-        )}
-        title="Ordered List"
-      >
-        1.
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleTaskList().run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('taskList') ? 'bg-accent' : ''
-        )}
-        title="Task List"
-      >
-        ☑
-      </button>
-      <div className="border-l border-border mx-1"></div>
-      <button
-        onClick={setLink}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('link') ? 'bg-accent' : ''
-        )}
-        title="Add Link"
-      >
-        🔗
-      </button>
-      <button
-        onClick={addImage}
-        className="p-2 rounded hover:bg-accent"
-        title="Add Image"
-      >
-        🖼️
-      </button>
-      <div className="border-l border-border mx-1"></div>
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive({ textAlign: 'left' }) ? 'bg-accent' : ''
-        )}
-        title="Align Left"
-      >
-        ≡
-      </button>
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive({ textAlign: 'center' }) ? 'bg-accent' : ''
-        )}
-        title="Align Center"
-      >
-        ≡
-      </button>
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive({ textAlign: 'right' }) ? 'bg-accent' : ''
-        )}
-        title="Align Right"
-      >
-        ≡
-      </button>
-      <div className="border-l border-border mx-1"></div>
-      <button
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
-        className={cn(
-          'p-2 rounded hover:bg-accent',
-          editor.isActive('highlight') ? 'bg-accent' : ''
-        )}
-        title="Highlight"
-      >
-        🖍️
-      </button>
-      <input
-        type="color"
-        onInput={(event: any) =>
-          editor.chain().focus().setColor(event.target.value).run()
-        }
-        value={editor.getAttributes('textStyle').color || '#000000'}
-        className="w-8 h-8 p-0 border-0 bg-transparent cursor-pointer"
-        title="Text Color"
-      />
+    <div className="border-b bg-background/95 backdrop-blur sticky top-0 z-10">
+      {/* Primary toolbar - always visible */}
+      <div className="flex items-center justify-between p-2 overflow-x-auto">
+        <div className="flex items-center space-x-1">
+          {primaryTools.map((tool, index) => (
+            <button
+              key={index}
+              onClick={tool.action}
+              className={cn(
+                'flex items-center justify-center h-10 w-10 rounded-md text-sm transition-colors touch-manipulation',
+                tool.active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+                tool.className
+              )}
+            >
+              {tool.icon}
+            </button>
+          ))}
+        </div>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowMore(!showMore)}
+          className="h-10 px-3"
+        >
+          {showMore ? 'Less' : 'More'}
+        </Button>
+      </div>
+      
+      {/* Secondary toolbar - expandable */}
+      {showMore && (
+        <div className="flex items-center space-x-1 p-2 border-t overflow-x-auto">
+          {secondaryTools.map((tool, index) => (
+            <button
+              key={index}
+              onClick={tool.action}
+              className={cn(
+                'flex items-center justify-center h-10 w-10 rounded-md text-sm transition-colors touch-manipulation',
+                tool.active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+                tool.className
+              )}
+            >
+              {tool.icon}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

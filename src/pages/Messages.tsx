@@ -1,10 +1,14 @@
-import { PlaceholderPage } from './PlaceholderPage';
+import { PageLayout } from './PageLayout';
 
 export function Messages() {
   return (
-    <PlaceholderPage 
-      title="Messages"
-      description="Leave notes and messages for each other"
-    />
+    <PageLayout 
+      title="Messages" 
+      description="Chat with your AI assistant"
+    >
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Messages feature coming soon...</p>
+      </div>
+    </PageLayout>
   );
 }

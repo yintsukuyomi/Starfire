@@ -1,10 +1,14 @@
-import { PlaceholderPage } from './PlaceholderPage';
+import { PageLayout } from './PageLayout';
 
 export function TimeCapsule() {
   return (
-    <PlaceholderPage 
-      title="Time Capsule"
-      description="Create messages to be opened in the future"
-    />
+    <PageLayout 
+      title="Time Capsule" 
+      description="Store memories for the future"
+    >
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Time Capsule feature coming soon...</p>
+      </div>
+    </PageLayout>
   );
 }

@@ -4,19 +4,27 @@ export interface Note {
   content: string;
   tags: string[];
   folderId: string | null;
-  createdAt: string;  // Changed from Date to string for ISO dates
-  updatedAt: string;  // Changed from Date to string for ISO dates
-  version: number;
   isArchived: boolean;
   isPinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
 }
 
 export interface Folder {
   id: string;
   name: string;
   parentId: string | null;
-  createdAt: string;  // Changed from Date to string for ISO dates
-  updatedAt: string;  // Changed from Date to string for ISO dates
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface NoteVersion {
@@ -25,19 +33,11 @@ export interface NoteVersion {
   title: string;
   content: string;
   tags: string[];
-  folderId?: string;
+  folderId: string | null;
   isArchived: boolean;
   isPinned: boolean;
   version: number;
-  updatedBy?: string;
   updatedAt: string;
-  changeSummary?: string;
-}
-
-export interface Tag {
-  id: string;
-  name: string;
-  color: string;
-  createdAt: string;  // Changed from Date to string for ISO dates
-  updatedAt: string;  // Changed from Date to string for ISO dates
+  updatedBy: string;
+  changeSummary: string;
 }
