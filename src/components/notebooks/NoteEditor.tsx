@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Tag, Star, Archive, Trash2, Clock, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Tag, Star, Archive, Trash2, Clock, MoreHorizontal, Pencil, X } from 'lucide-react';
 import { TiptapEditor } from '../editor/TiptapEditor';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { cn } from '../../lib/utils';
 import { Note, Tag as TagType } from '../../types/notebooks';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 
 interface NoteEditorProps {
   note: Note | null;
@@ -12,6 +13,27 @@ interface NoteEditorProps {
   onSave: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'version'>) => void;
   onDelete: (id: string) => void;
   onBack: () => void;
+}
+
+// Tag CRUD API helpers
+async function createTag(name: string, color: string) {
+  const res = await fetch('/api/tags', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, color })
+  });
+  return res.json();
+}
+async function updateTag(id: string, name: string, color: string) {
+  const res = await fetch(`/api/tags/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, color })
+  });
+  return res.json();
+}
+async function deleteTag(id: string) {
+  await fetch(`/api/tags/${id}`, { method: 'DELETE' });
 }
 
 export function NoteEditor({
@@ -27,6 +49,14 @@ export function NoteEditor({
   const [isPinned, setIsPinned] = useState(note?.isPinned || false);
   const [isArchived, setIsArchived] = useState(note?.isArchived || false);
   const [showTagMenu, setShowTagMenu] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#007aff');
+  const [editingTag, setEditingTag] = useState<TagType | null>(null);
+  const [editTagName, setEditTagName] = useState('');
+  const [editTagColor, setEditTagColor] = useState('#007aff');
+  const [deleteTagId, setDeleteTagId] = useState<string | null>(null);
+  const [tagsState, setTagsState] = useState<TagType[]>(allTags);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Update state when note changes
   useEffect(() => {
@@ -38,6 +68,8 @@ export function NoteEditor({
       setIsArchived(note.isArchived);
     }
   }, [note]);
+
+  useEffect(() => { setTagsState(allTags); }, [allTags]);
 
   const handleSave = () => {
     if (!note) return;
@@ -53,11 +85,7 @@ export function NoteEditor({
   };
 
   const handleDelete = () => {
-    if (!note) return;
-    
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      onDelete(note.id);
-    }
+    setDeleteDialogOpen(true);
   };
 
   const handleTagSelect = (tagId: string) => {
@@ -165,18 +193,65 @@ export function NoteEditor({
 
           {/* Tag menu */}
           {showTagMenu && (
-            <div className="absolute right-4 mt-2 p-2 bg-card border rounded-lg shadow-lg z-20">
-              <div className="flex flex-wrap gap-2">
-                {allTags.map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant={selectedTags.includes(tag.id) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    style={{ backgroundColor: selectedTags.includes(tag.id) ? tag.color : undefined }}
-                    onClick={() => handleTagSelect(tag.id)}
+            <div className="absolute right-4 mt-2 p-4 bg-card border rounded-2xl shadow-lg z-20 w-72">
+              <div className="mb-3">
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={newTagName}
+                    onChange={e => setNewTagName(e.target.value)}
+                    placeholder="Yeni etiket adı"
+                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-muted text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    maxLength={24}
+                  />
+                  <input
+                    type="color"
+                    value={newTagColor}
+                    onChange={e => setNewTagColor(e.target.value)}
+                    className="w-8 h-8 rounded-full border-none"
+                    style={{ background: 'none' }}
+                  />
+                  <Button
+                    size="sm"
+                    className="rounded-full"
+                    disabled={!newTagName.trim()}
+                    onClick={async () => {
+                      const tag = await createTag(newTagName.trim(), newTagColor);
+                      setTagsState([...tagsState, tag]);
+                      setNewTagName('');
+                      setNewTagColor('#007aff');
+                    }}
                   >
-                    {tag.name}
-                  </Badge>
+                    +
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tagsState.map((tag) => (
+                  <div key={tag.id} className="flex items-center gap-1 bg-muted rounded-full px-2 py-1">
+                    <Badge
+                      variant={selectedTags.includes(tag.id) ? 'default' : 'outline'}
+                      className="cursor-pointer"
+                      style={{ backgroundColor: selectedTags.includes(tag.id) ? tag.color : undefined }}
+                      onClick={() => handleTagSelect(tag.id)}
+                    >
+                      {tag.name}
+                    </Badge>
+                    <button
+                      className="p-1 hover:bg-accent rounded-full"
+                      onClick={() => { setEditingTag(tag); setEditTagName(tag.name); setEditTagColor(tag.color); }}
+                      title="Düzenle"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                    <button
+                      className="p-1 hover:bg-accent rounded-full"
+                      onClick={() => setDeleteTagId(tag.id)}
+                      title="Sil"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -204,6 +279,96 @@ export function NoteEditor({
           <Button onClick={handleSave}>Save</Button>
         </div>
       </div>
+
+      {/* Etiket düzenleme modalı */}
+      <Dialog open={!!editingTag} onOpenChange={open => { if (!open) setEditingTag(null); }}>
+        <DialogContent className="rounded-2xl p-6 max-w-xs mx-auto bg-background">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Etiketi Düzenle</DialogTitle>
+          </DialogHeader>
+          <input
+            type="text"
+            value={editTagName}
+            onChange={e => setEditTagName(e.target.value)}
+            className="w-full mt-4 mb-4 px-4 py-2 rounded-lg border border-border bg-muted text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            maxLength={24}
+          />
+          <input
+            type="color"
+            value={editTagColor}
+            onChange={e => setEditTagColor(e.target.value)}
+            className="w-10 h-10 rounded-full border-none mx-auto mb-4"
+            style={{ background: 'none' }}
+          />
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button variant="ghost" onClick={() => setEditingTag(null)}>
+              İptal
+            </Button>
+            <Button
+              onClick={async () => {
+                if (editingTag) {
+                  const updated = await updateTag(editingTag.id, editTagName, editTagColor);
+                  setTagsState(tagsState.map(t => t.id === editingTag.id ? updated : t));
+                  setEditingTag(null);
+                }
+              }}
+              disabled={!editTagName.trim()}
+            >
+              Kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Etiket silme onay modalı */}
+      <Dialog open={!!deleteTagId} onOpenChange={open => { if (!open) setDeleteTagId(null); }}>
+        <DialogContent className="rounded-2xl p-6 max-w-xs mx-auto bg-background">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Etiketi Sil</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center text-muted-foreground">
+            Bu etiketi silmek istediğine emin misin? Notlardan da kaldırılacak.
+          </div>
+          <DialogFooter className="flex gap-2 justify-end mt-4">
+            <Button variant="ghost" onClick={() => setDeleteTagId(null)}>
+              İptal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (deleteTagId) {
+                  await deleteTag(deleteTagId);
+                  setTagsState(tagsState.filter(t => t.id !== deleteTagId));
+                  setDeleteTagId(null);
+                }
+              }}
+            >
+              Sil
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Not silme onay modalı */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="rounded-2xl p-6 max-w-xs mx-auto bg-background">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Notu Sil</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center text-muted-foreground">
+            Bu notu silmek istediğine emin misin? Bu işlem geri alınamaz.
+          </div>
+          <DialogFooter className="flex gap-2 justify-end mt-4">
+            <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)}>
+              İptal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => { onDelete(note.id); setDeleteDialogOpen(false); }}
+            >
+              Sil
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

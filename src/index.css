@@ -3,66 +3,57 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+  :root, .dark {
+    --background: 0 0 0;
+    --foreground: 255 255 255;
+    --primary: 0 122 255;
+    --primary-foreground: 255 255 255;
+    --card: 18 18 18;
+    --card-foreground: 255 255 255;
+    --popover: 18 18 18;
+    --popover-foreground: 255 255 255;
+    --secondary: 28 28 30;
+    --secondary-foreground: 255 255 255;
+    --muted: 28 28 30;
+    --muted-foreground: 161 161 170;
+    --accent: 0 122 255;
+    --accent-foreground: 255 255 255;
+    --destructive: 255 69 58;
+    --destructive-foreground: 255 255 255;
+    --border: 39 39 42;
+    --input: 39 39 42;
+    --ring: 0 122 255;
+    --radius: 12px;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+  .sakura {
+    --background: 254 252 255;
+    --foreground: 76 29 149;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 255 250 255;
+    --card-foreground: 76 29 149;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 255 250 255;
+    --popover-foreground: 76 29 149;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 219 39 119;
+    --primary-foreground: 253 244 255;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 253 244 255;
+    --secondary-foreground: 76 29 149;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 250 232 255;
+    --muted-foreground: 107 33 168;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 250 232 255;
+    --accent-foreground: 76 29 149;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 244 63 94;
+    --destructive-foreground: 253 244 255;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 244 114 182;
+    --input: 244 114 182;
+    --ring: 219 39 119;
   }
 }
 
@@ -84,16 +75,21 @@
     /* Better font rendering on mobile */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
   }
   
-  body {
-    @apply bg-background text-foreground;
+  body, .text-foreground {
+    background: #000 !important;
+    color: #fff !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
     /* Prevent pull-to-refresh on mobile */
     overscroll-behavior-y: contain;
     /* Prevent horizontal scroll */
     overflow-x: hidden;
     /* Better mobile scrolling */
     -webkit-overflow-scrolling: touch;
+    /* iOS-style line height */
+    line-height: 1.47;
   }
 
   /* Mobile viewport fixes */
@@ -103,48 +99,66 @@
     position: relative;
   }
 
-  /* Better button touch targets for mobile */
+  /* iOS-style button touch targets */
   button, [role="button"], [type="button"], [type="submit"] {
     min-height: 44px; /* iOS recommended touch target */
     min-width: 44px;
     /* Better touch feedback */
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    /* iOS-style button feedback */
+    transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
-  /* Improve input handling on mobile */
+  button:active {
+    transform: scale(0.98);
+  }
+
+  /* iOS-style inputs */
   input, textarea, select {
-    font-size: 16px; /* Prevent zoom on iOS */
+    font-size: 17px; /* iOS body text size */
     /* Better mobile interaction */
     -webkit-appearance: none;
-    border-radius: 0.5rem;
+    border-radius: 12px;
+    font-family: inherit;
   }
 
-  /* Force 16px font size on mobile to prevent zoom */
+  /* Force 17px font size on mobile to prevent zoom */
   @media (max-width: 768px) {
     input, textarea, select {
-      font-size: 16px !important;
+      font-size: 17px !important;
     }
   }
+
+  /* iOS-style typography */
+  h1 { @apply text-ios-large-title font-bold; }
+  h2 { @apply text-ios-title1 font-bold; }
+  h3 { @apply text-ios-title2 font-bold; }
+  h4 { @apply text-ios-title3 font-semibold; }
+  h5 { @apply text-ios-headline font-semibold; }
+  h6 { @apply text-ios-body font-semibold; }
+  
+  p { @apply text-ios-body; }
+  small { @apply text-ios-footnote; }
+  .caption { @apply text-ios-caption1; }
 }
 
-/* Mobile-specific utilities */
+/* iOS-specific utilities */
 @layer utilities {
   .touch-manipulation {
     touch-action: manipulation;
   }
   
-  /* Safe area utilities for notch/dynamic island */
+  /* Safe area utilities */
   .safe-area-inset {
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   
   .safe-top {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(env(safe-area-inset-top), 20px);
   }
   
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-    min-height: env(safe-area-inset-bottom, 20px);
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
   }
   
   .safe-left {
@@ -155,17 +169,67 @@
     padding-right: env(safe-area-inset-right);
   }
 
-  /* Mobile navigation utilities */
-  .mobile-nav-height {
-    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  /* iOS-style cards */
+  .ios-card {
+    @apply bg-card border border-border rounded-ios shadow-ios backdrop-blur-ios;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   
-  /* Mobile toast positioning */
-  .mobile-toast {
-    margin-top: env(safe-area-inset-top, 0px);
+  .ios-card:active {
+    @apply scale-[0.98] shadow-ios-sm;
   }
   
+  /* iOS-style list items */
+  .ios-list-item {
+    @apply bg-card border-b border-border last:border-b-0 touch-manipulation;
+    transition: background-color 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .ios-list-item:active {
+    @apply bg-ios-gray-6 dark:bg-ios-gray/20;
+  }
+
+  /* iOS-style blur backgrounds */
+  .ios-blur {
+    background: #000 !important;
+    backdrop-filter: none !important;
+  }
+
+  .dark .ios-blur {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  /* iOS-style navigation */
+  .ios-nav-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #000 !important;
+    min-height: 96px;
+    border-bottom: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .ios-tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: #000 !important;
+    height: calc(80px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* iOS-style sheet/modal */
+  .ios-sheet {
+    @apply rounded-t-ios-xl shadow-ios-sheet border-t border-border;
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
   /* Hide scrollbars but keep functionality */
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -175,334 +239,244 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
-  /* Mobile-optimized card */
-  .mobile-card {
-    @apply rounded-lg border border-border bg-card text-card-foreground shadow-sm p-4;
-    /* Better touch feedback */
-    transition: all 0.2s ease;
+
+  /* iOS-style animations */
+  .animate-ios-bounce {
+    animation: bounce-gentle 2s ease-in-out infinite;
+  }
+
+  /* iOS-style gradients */
+  .ios-gradient-blue {
+    background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
   }
   
-  .mobile-card:active {
-    @apply scale-95 bg-accent/50;
+  .ios-gradient-green {
+    background: linear-gradient(135deg, #34C759 0%, #30D158 100%);
   }
   
-  /* Mobile list item */
-  .mobile-list-item {
-    @apply p-4 border-b border-border last:border-b-0 touch-manipulation;
-    transition: background-color 0.2s ease;
+  .ios-gradient-purple {
+    background: linear-gradient(135deg, #AF52DE 0%, #FF2D92 100%);
   }
   
-  .mobile-list-item:active {
-    @apply bg-accent/50;
+  .ios-gradient-orange {
+    background: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%);
+  }
+
+  /* Text truncation */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 }
 
-/* Tiptap Editor Mobile Optimizations */
+/* Tiptap Editor iOS Optimizations */
 .ProseMirror {
   outline: none;
-  padding: 1rem;
+  padding: 20px;
   min-height: 300px;
-  /* Better mobile editing */
   -webkit-user-select: text;
   user-select: text;
-  line-height: 1.6;
-  /* Prevent layout issues on mobile */
+  line-height: 1.47;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  font-size: 17px;
+  font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', sans-serif;
 }
 
 @media (max-width: 768px) {
   .ProseMirror {
-    padding: 1rem 0.75rem;
-    font-size: 16px; /* Prevent zoom on iOS */
-    line-height: 1.5;
+    padding: 16px;
+    font-size: 17px;
+    line-height: 1.47;
     min-height: 200px;
   }
-  
-  /* Better touch targets for mobile */
-  .ProseMirror ul[data-type="taskList"] input[type="checkbox"] {
-    min-width: 20px;
-    min-height: 20px;
-    transform: scale(1.2);
-  }
-  
-  /* Better link touch targets */
-  .ProseMirror a {
-    padding: 0.25rem 0.125rem;
-    margin: -0.25rem -0.125rem;
-    border-radius: 0.25rem;
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-  }
 }
 
-/* Tiptap Editor Styles */
-.ProseMirror {
-  outline: none;
-  padding: 1rem;
-  min-height: 200px;
-}
-
-/* Placeholder styles */
+/* iOS-style placeholder */
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: hsl(var(--muted-foreground));
   pointer-events: none;
   height: 0;
+  font-style: normal;
 }
 
-.ProseMirror[data-placeholder]:empty::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: hsl(var(--muted-foreground));
-  pointer-events: none;
-  height: 0;
+/* iOS-style headings in editor */
+.ProseMirror h1 { @apply text-ios-large-title font-bold mt-6 mb-4; }
+.ProseMirror h2 { @apply text-ios-title1 font-bold mt-5 mb-3; }
+.ProseMirror h3 { @apply text-ios-title2 font-bold mt-4 mb-2; }
+.ProseMirror h4 { @apply text-ios-title3 font-semibold mt-4 mb-2; }
+
+/* iOS-style lists */
+.ProseMirror ul, .ProseMirror ol {
+  padding-left: 24px;
+  margin: 16px 0;
 }
 
-.ProseMirror h1,
-.ProseMirror h2,
-.ProseMirror h3,
-.ProseMirror h4,
-.ProseMirror h5,
-.ProseMirror h6 {
-  line-height: 1.1;
-  margin-top: 2.5rem;
-  text-wrap: pretty;
+.ProseMirror li {
+  margin: 8px 0;
+  line-height: 1.47;
 }
 
-.ProseMirror h1,
-.ProseMirror h2 {
-  margin-top: 3.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.ProseMirror h1 {
-  font-size: 1.4rem;
-}
-
-.ProseMirror h2 {
-  font-size: 1.2rem;
-}
-
-.ProseMirror h3 {
-  font-size: 1.1rem;
-}
-
-.ProseMirror h4,
-.ProseMirror h5,
-.ProseMirror h6 {
-  font-size: 1rem;
-}
-
-.ProseMirror ul,
-.ProseMirror ol {
-  padding: 0 1rem;
-  margin: 1.25rem 1rem 1.25rem 0.4rem;
-}
-
-.ProseMirror li p {
-  margin-top: 0.25em;
-  margin-bottom: 0.25em;
-}
-
-/* Task list styles */
+/* iOS-style task lists */
 .ProseMirror ul[data-type="taskList"] {
   list-style: none;
   padding: 0;
-}
-
-.ProseMirror ul[data-type="taskList"] p {
-  margin: 0;
+  margin: 16px 0;
 }
 
 .ProseMirror ul[data-type="taskList"] li {
   display: flex;
+  align-items: flex-start;
+  margin: 12px 0;
 }
 
 .ProseMirror ul[data-type="taskList"] li > label {
   flex: 0 0 auto;
-  margin-right: 0.5rem;
+  margin-right: 12px;
+  margin-top: 2px;
   user-select: none;
-}
-
-.ProseMirror ul[data-type="taskList"] li > div {
-  flex: 1 1 auto;
 }
 
 .ProseMirror ul[data-type="taskList"] input[type="checkbox"] {
   cursor: pointer;
-  /* Better touch target */
-  min-width: 18px;
-  min-height: 18px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 6px;
+  border: 2px solid hsl(var(--border));
+  appearance: none;
+  background: hsl(var(--background));
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ProseMirror ul[data-type="taskList"] input[type="checkbox"]:checked {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
 }
 
 .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
   text-decoration: line-through;
+  opacity: 0.6;
 }
 
-/* Highlight styles */
-.ProseMirror mark {
-  background-color: #fef3c7;
-  border-radius: 0.25rem;
-  box-decoration-break: clone;
-  padding: 0.125rem 0.25rem;
-}
-
-.dark .ProseMirror mark {
-  background-color: #92400e;
-}
-
-/* Link styles */
+/* iOS-style links */
 .ProseMirror a {
-  color: hsl(var(--primary));
-  cursor: pointer;
-  /* Better touch targets */
-  padding: 0.125rem 0.25rem;
-  margin: -0.125rem -0.25rem;
-  border-radius: 0.25rem;
-  text-decoration: underline;
+  color: #007AFF;
+  text-decoration: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background-color 0.15s ease;
 }
 
 .ProseMirror a:hover {
-  background-color: hsl(var(--accent));
+  background-color: rgba(0, 122, 255, 0.1);
 }
 
-/* Image styles */
-.ProseMirror img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
-  /* Better mobile image handling */
-  touch-action: manipulation;
-}
-
-/* Blockquote styles */
-.ProseMirror blockquote {
-  padding-left: 1rem;
-  border-left: 2px solid hsl(var(--border));
-  margin-left: 0;
-  margin-right: 0;
-  font-style: italic;
-}
-
-/* Code styles */
+/* iOS-style code */
 .ProseMirror code {
-  background-color: hsl(var(--muted));
-  border-radius: 0.25rem;
+  background: hsl(var(--muted));
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 15px;
+  color: #D12F5C;
+}
+
+.dark .ProseMirror code {
+  color: #FF69B4;
+}
+
+/* iOS-style blockquotes */
+.ProseMirror blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 16px;
+  margin: 16px 0;
+  font-style: italic;
   color: hsl(var(--muted-foreground));
-  font-size: 0.9em;
-  padding: 0.125rem 0.25rem;
-  /* Prevent code from breaking mobile layout */
-  word-break: break-all;
-  white-space: pre-wrap;
 }
 
-.ProseMirror pre {
-  background-color: hsl(var(--muted));
-  border-radius: 0.5rem;
-  color: hsl(var(--muted-foreground));
-  font-family: 'JetBrainsMono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
-  overflow-x: auto;
-  padding: 0.75rem 1rem;
-  /* Better mobile code block handling */
-  -webkit-overflow-scrolling: touch;
+/* iOS-style selection */
+.ProseMirror ::selection {
+  background: rgba(0, 122, 255, 0.2);
 }
 
-.ProseMirror pre code {
-  background: none;
-  color: inherit;
-  font-size: 0.8rem;
-  padding: 0;
-  word-break: normal;
-  white-space: pre;
-}
-
-/* Selection styles */
-.ProseMirror .ProseMirror-selectednode {
-  outline: 2px solid hsl(var(--primary));
-}
-
-/* Line clamp utilities */
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-/* Mobile-specific overrides */
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 16px;
+    padding-right: 16px;
   }
   
-  /* Reduce margins on mobile */
-  .ProseMirror h1,
-  .ProseMirror h2 {
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-  }
+  .ProseMirror h1 { @apply text-ios-title1 mt-4 mb-3; }
+  .ProseMirror h2 { @apply text-ios-title2 mt-4 mb-2; }
+  .ProseMirror h3 { @apply text-ios-title3 mt-3 mb-2; }
   
-  .ProseMirror h3,
-  .ProseMirror h4,
-  .ProseMirror h5,
-  .ProseMirror h6 {
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Better mobile typography */
-  .ProseMirror p {
-    margin-bottom: 1rem;
-  }
-  
-  .ProseMirror ul,
-  .ProseMirror ol {
-    padding-left: 1.5rem;
-    margin: 1rem 0;
-  }
-  
-  /* Mobile code blocks */
-  .ProseMirror pre {
-    padding: 0.75rem;
-    margin: 1rem 0;
-    font-size: 14px;
-    overflow-x: auto;
-    border-radius: 0.5rem;
-  }
-  
-  .ProseMirror code {
-    font-size: 14px;
-    padding: 0.125rem 0.25rem;
+  .ProseMirror ul, .ProseMirror ol {
+    padding-left: 20px;
+    margin: 12px 0;
   }
 }
 
 /* PWA specific styles */
 @media (display-mode: standalone) {
   body {
-    /* Styles for when app is installed as PWA */
     -webkit-user-select: none;
     user-select: none;
   }
   
-  /* Allow text selection in editor areas */
-  .ProseMirror,
-  input,
-  textarea {
+  .ProseMirror, input, textarea {
     -webkit-user-select: text;
     user-select: text;
   }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .ios-card, .ios-list-item {
+    border-width: 2px;
+  }
+  
+  button {
+    border-width: 2px;
+  }
+}
+
+/* Allow text selection in editor areas */
+.ProseMirror,
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* Dark mode mobile optimizations */

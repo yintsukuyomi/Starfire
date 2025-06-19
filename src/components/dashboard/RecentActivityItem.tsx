@@ -34,11 +34,11 @@ export function RecentActivityItem({
   const getStatusColor = () => {
     switch (status) {
       case 'completed':
-        return 'text-emerald-500';
+        return 'text-ios-blue dark:text-ios-blue';
       case 'in-progress':
-        return 'text-blue-500';
+        return 'text-ios-orange dark:text-ios-orange';
       case 'pending':
-        return 'text-orange-500';
+        return 'text-muted-foreground';
       default:
         return 'text-muted-foreground';
     }

@@ -4,26 +4,34 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation",
+  "inline-flex items-center justify-center whitespace-nowrap text-ios-body font-medium ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation active:scale-98 font-ios",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80",
+        default: "bg-ios-blue text-white hover:bg-ios-blue/90 active:bg-ios-blue/80 shadow-ios rounded-ios",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/80",
+          "bg-ios-red text-white hover:bg-ios-red/90 active:bg-ios-red/80 shadow-ios rounded-ios",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent/80",
+          "border-2 border-ios-blue bg-transparent text-ios-blue hover:bg-ios-blue/10 active:bg-ios-blue/20 rounded-ios",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70",
-        ghost: "hover:bg-accent hover:text-accent-foreground active:bg-accent/80",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-ios-gray-6 text-foreground hover:bg-ios-gray-5 active:bg-ios-gray-4 rounded-ios",
+        ghost: "hover:bg-accent/50 active:bg-accent/80 rounded-ios",
+        link: "text-ios-blue underline-offset-4 hover:underline p-0 h-auto",
+        // iOS-specific variants
+        ios: "bg-ios-blue text-white hover:bg-ios-blue/90 active:bg-ios-blue/80 shadow-ios rounded-ios font-semibold",
+        "ios-filled": "bg-accent text-accent-foreground hover:bg-accent/80 active:bg-accent/60 rounded-ios shadow-ios-sm",
+        "ios-tinted": "bg-ios-blue/10 text-ios-blue hover:bg-ios-blue/20 active:bg-ios-blue/30 rounded-ios",
+        "ios-gray": "bg-ios-gray-6 text-ios-gray hover:bg-ios-gray-5 active:bg-ios-gray-4 rounded-ios",
       },
       size: {
-        default: "h-10 px-4 py-2 min-h-[44px]", // iOS touch target
-        sm: "h-9 rounded-md px-3 min-h-[40px]",
-        lg: "h-11 rounded-md px-8 min-h-[48px]",
-        icon: "h-10 w-10 min-h-[44px] min-w-[44px]",
-        xs: "h-8 px-2 text-xs min-h-[36px]",
+        default: "h-11 px-6 py-2 min-h-[44px]", 
+        sm: "h-9 rounded-ios px-4 min-h-[36px] text-ios-footnote",
+        lg: "h-12 rounded-ios px-8 min-h-[48px] text-ios-headline",
+        icon: "h-11 w-11 min-h-[44px] min-w-[44px] rounded-ios",
+        xs: "h-8 px-3 text-ios-caption1 min-h-[32px] rounded-lg",
+        // iOS-specific sizes
+        "ios-large": "h-12 px-8 text-ios-headline font-semibold min-h-[50px] rounded-ios",
+        "ios-small": "h-8 px-4 text-ios-footnote min-h-[32px] rounded-lg",
       },
     },
     defaultVariants: {

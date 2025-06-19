@@ -52,3 +52,19 @@ export default tseslint.config({
   },
 })
 ```
+
+## GitHub Pages ile Yayınlama
+
+1. Gerekli paketi yükle:
+   ```bash
+   npm install --save-dev gh-pages
+   ```
+2. `vite.config.ts` dosyasında base ayarının `/Starfire/` olduğundan emin olun.
+3. Deploy etmek için:
+   ```bash
+   npm run deploy
+   ```
+4. Uygulamanız şu adreste yayınlanacaktır:
+   https://yintsukuyomi.github.io/Starfire/
+
+> Not: Her deploy sonrası değişikliklerin görünmesi için sayfayı hard-refresh yapmanız gerekebilir.

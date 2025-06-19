@@ -19,25 +19,26 @@ export function QuickActionCard({
   return (
     <button
       onClick={onClick}
-      className={cn(
-        "relative overflow-hidden rounded-xl border bg-card p-4 text-left transition-all duration-200 hover:shadow-md active:scale-95",
-        color
-      )}
+      className="rounded-2xl shadow-ios bg-gradient-to-br from-white/10 to-black/10 dark:from-black/30 dark:to-black/10 p-4 flex flex-col items-center justify-center transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary"
+      style={{ minHeight: 110 }}
     >
-      {/* Background gradient */}
       <div className={cn(
-        "absolute inset-0 bg-gradient-to-br opacity-50",
-        color
-      )} />
-      
-      {/* Content */}
-      <div className="relative z-10">
-        <div className="rounded-lg bg-background/50 p-2 mb-3 inline-block">
-          <Icon className="h-5 w-5 text-foreground/70" />
-        </div>
-        <h3 className="font-medium text-foreground mb-1">{title}</h3>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
+        "w-14 h-14 rounded-xl flex items-center justify-center mb-2 bg-white/20 dark:bg-black/20",
+        color.includes('blue') && "bg-ios-blue/15",
+        color.includes('green') && "bg-ios-green/15",
+        color.includes('purple') && "bg-ios-purple/15",
+        color.includes('orange') && "bg-ios-orange/15"
+      )}>
+        <Icon className={cn(
+          "h-8 w-8",
+          color.includes('blue') && "text-ios-blue",
+          color.includes('green') && "text-ios-green",
+          color.includes('purple') && "text-ios-purple",
+          color.includes('orange') && "text-ios-orange"
+        )} />
       </div>
+      <h3 className="text-base font-bold text-foreground mb-0.5 text-center">{title}</h3>
+      {subtitle && <p className="text-xs text-muted-foreground text-center">{subtitle}</p>}
     </button>
   );
 }

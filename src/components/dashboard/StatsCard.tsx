@@ -34,7 +34,9 @@ export function StatsCard({
         {trend && (
           <div className={cn(
             "flex items-center text-xs font-medium",
-            trend.isPositive ? "text-emerald-500" : "text-red-500"
+            trend.isPositive
+              ? "text-ios-blue dark:text-ios-blue"
+              : "text-ios-red dark:text-ios-red"
           )}>
             {trend.isPositive ? (
               <ArrowUpRight className="h-3 w-3 mr-1" />

@@ -1,7 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from 'sonner';
+import { Navigation } from '@/components/layout/Navigation';
 
 type MainLayoutProps = {
   children?: ReactNode;
@@ -31,27 +30,15 @@ export function MainLayout({ children }: MainLayoutProps) {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="system" enableSystem>
-      <div className="min-h-screen min-h-dvh bg-background text-foreground">
-        {/* Mobile-first full screen layout */}
-        <main className="h-screen h-dvh flex flex-col">
-          <div className="flex-1 overflow-auto safe-area-inset">
-            {children || <Outlet />}
-          </div>
-        </main>
-        <Toaster 
-          position="top-center"
-          expand={false}
-          richColors
-          closeButton
-          toastOptions={{
-            className: 'mobile-toast safe-top',
-            style: {
-              marginTop: 'env(safe-area-inset-top)',
-            }
-          }}
-        />
-      </div>
-    </ThemeProvider>
+    <div className="min-h-screen min-h-dvh bg-background text-foreground">
+      {/* Mobile-first full screen layout */}
+      <main className="h-screen h-dvh flex flex-col pb-16">
+        <div className="flex-1 overflow-auto safe-area-inset">
+          {children || <Outlet />}
+        </div>
+      </main>
+      {/* iOS-style bottom tab bar */}
+      <Navigation />
+    </div>
   );
 }
