@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "homepage": "https://yintsukuyomi.github.io/Starfire",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/yintsukuyomi/Starfire.git"
+  },
   "scripts": {
     "dev": "vite",
     "dev:full": "concurrently \"vite\" \"cd server && npm run dev\"",
