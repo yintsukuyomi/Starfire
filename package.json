@@ -16,7 +16,7 @@
     "preview": "vite preview",
     "prettier": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist -r git@github.com:yintsukuyomi/Starfire.git"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
