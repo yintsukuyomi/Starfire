@@ -48,4 +48,8 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+],
+{
+  basename: "/Starfire/",
+}
+);
