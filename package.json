@@ -15,7 +15,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prettier": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build && cp dist/index.html dist/404.html",
     "deploy": "gh-pages -d dist -r git@github.com:yintsukuyomi/Starfire.git"
   },
   "dependencies": {
