@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 import { Navigation } from '../components/layout/Navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Link } from 'react-router-dom';
 import { Settings, Info, Clock, Star, Heart } from 'lucide-react';
 import React, { useState } from 'react';

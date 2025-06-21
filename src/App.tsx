@@ -5,7 +5,7 @@ import { router } from '@/lib/router';
 
 export function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <ThemeProvider>
       <RouterProvider router={router} />
       <SonnerToaster position="top-right" richColors />
     </ThemeProvider>
